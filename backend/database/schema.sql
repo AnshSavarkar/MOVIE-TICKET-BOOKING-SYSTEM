@@ -1,0 +1,55 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user'
+);
+
+CREATE TABLE IF NOT EXISTS movies (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  poster_url TEXT DEFAULT '',
+  poster_path TEXT DEFAULT '',
+  poster_blob BLOB,
+  poster_mime TEXT DEFAULT '',
+  description TEXT DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS shows (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  movie_id INTEGER NOT NULL,
+  theatre TEXT NOT NULL,
+  show_time TEXT NOT NULL,
+  rows INTEGER NOT NULL,
+  cols INTEGER NOT NULL,
+  FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  show_id INTEGER NOT NULL,
+  seat TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE,
+  UNIQUE (show_id, seat)
+);
+
+-- Grouped booking to support snacks, totals and QR codes
+CREATE TABLE IF NOT EXISTS booking_groups (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  show_id INTEGER NOT NULL,
+  seats_json TEXT NOT NULL,
+  snacks_json TEXT DEFAULT '',
+  total REAL DEFAULT 0,
+  qr TEXT DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE
+);
+
